@@ -18,6 +18,9 @@
 */
 /**************************************************************************/
 
+#ifndef __ADAFRUIT_ADS1015_H
+#define __ADAFRUIT_ADS1015_H
+
 #if ARDUINO >= 100
  #include "Arduino.h"
 #else
@@ -134,3 +137,5 @@ int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels);
 void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channel, int16_t threshold);
 
 int16_t ads1x15_getLastConversionResults(struct ads1x15 *ads1x15);
+
+#endif  /* __ADAFRUIT_ADS1015_H */
