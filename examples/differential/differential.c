@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     //float multiplier = 0.1875F; /* ADS1115  @ +/- 6.144V gain (16-bit results) */
 
     if (argc == 1)
-        printf("Warning: no I2C device provided. Using /dev/i2c-1.");
+        printf("Warning: no I2C device provided. Using /dev/i2c-1.\n");
     else
         filename = argv[1];
 

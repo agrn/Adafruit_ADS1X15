@@ -12,7 +12,7 @@ int main(int argc, char **argv) {
     char *filename = "/dev/i2c-1";
 
     if (argc == 1)
-        printf("Warning: no I2C device provided. Using /dev/i2c-1.");
+        printf("Warning: no I2C device provided. Using /dev/i2c-1.\n");
     else
         filename = argv[1];
 
