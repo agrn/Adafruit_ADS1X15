@@ -117,32 +117,20 @@ typedef enum
   GAIN_SIXTEEN      = ADS1015_REG_CONFIG_PGA_0_256V
 } adsGain_t;
 
-class Adafruit_ADS1015
-{
-protected:
-   // Instance-specific properties
-   uint8_t   m_i2cAddress;
-   uint8_t   m_conversionDelay;
-   uint8_t   m_bitShift;
-   adsGain_t m_gain;
-
- public:
-  Adafruit_ADS1015(uint8_t i2cAddress = ADS1015_ADDRESS);
-  void begin(void);
-  uint16_t  readADC_SingleEnded(uint8_t channel);
-  int16_t   readADC_Differential(uint8_t channels);
-  int16_t   readADC_Differential_0_1(void);
-  int16_t   readADC_Differential_2_3(void);
-  void      startComparator_SingleEnded(uint8_t channel, int16_t threshold);
-  int16_t   getLastConversionResults();
-  void      setGain(adsGain_t gain);
-  adsGain_t getGain(void);
-
+struct ads1x15 {
+    uint8_t i2cAddress;
+    uint8_t conversionDelay;
+    uint8_t bitShift;
+    adsGain_t gain;
 };
 
-// Derive from ADS1105 & override construction to set properties
-class Adafruit_ADS1115 : public Adafruit_ADS1015
-{
- public:
-  Adafruit_ADS1115(uint8_t i2cAddress = ADS1015_ADDRESS);
-};
+void ads1015_init(struct ads1x15 *ads1015, uint8_t i2cAddress);
+void ads1115_init(struct ads1x15 *ads1115, uint8_t i2cAddress);
+
+void ads1x15_begin();
+
+uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel);
+int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels);
+void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channel, int16_t threshold);
+
+int16_t ads1x15_getLastConversionResults(struct ads1x15 *ads1x15);
