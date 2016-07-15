@@ -98,7 +98,7 @@ void ads1015_init(struct ads1x15 *ads1015, uint8_t i2cAddress) {
 */
 /**************************************************************************/
 void ads1115_init(struct ads1x15 *ads1115, uint8_t i2cAddress) {
-    ads1015_init(ads1015, i2cAddress);
+    ads1015_init(ads1115, i2cAddress);
 
     ads1115->conversionDelay = ADS1115_CONVERSIONDELAY;
     ads1115->bitShift = 0;
