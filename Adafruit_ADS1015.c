@@ -58,7 +58,7 @@ static uint16_t readRegister(int fd, uint8_t i2cAddress, uint8_t reg) {
     if (ioctl(fd, I2C_SLAVE, i2cAddress) < 0)
         return 0;
 
-    if (write(fd, ADS1015_REG_POINTER_CONVERT, 1) != 1)
+    if (write(fd, &reg, 1) != 1)
         return 0;
 
     if (read(fd, buf, 2) != 2)
