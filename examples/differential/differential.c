@@ -9,9 +9,12 @@
 int main(int argc, char **argv) {
     int file;
     int16_t results;
-    float multiplier = 3.0F; /* 3.0F for ADS1015, 0.1875F for ADS1115 */
     struct ads1x15 ads;
     char *filename = "/dev/i2c-1";
+
+    /* Be sure to update this value based on the IC and the gain settings! */
+    float multiplier = 3.0F;    /* ADS1015 @ +/- 6.144V gain (12-bit results) */
+    //float multiplier = 0.1875F; /* ADS1115  @ +/- 6.144V gain (16-bit results) */
 
     if (argc == 1)
         printf("Warning: no I2C device provided. Using /dev/i2c-1.");
@@ -21,10 +24,28 @@ int main(int argc, char **argv) {
     file = open(filename, O_RDWR);
     if (file < 0) {
         perror("Failed to open bus");
+        if (getuid() != 0)
+            printf("Try running this program as root.\n");
+
         return EXIT_FAILURE;
     }
 
-    ads1015_init(&ads, file, 0x48);
+    //ads1115_init(&ads, file, 0x48); // Use this for the ADS1115
+    ads1015_init(&ads, file, 0x48); // Use this for the ADS1015
+
+    // The ADC input range (or gain) can be changed via the following
+    // functions, but be careful never to exceed VDD +0.3V max, or to
+    // exceed the upper and lower limits if you adjust the input range!
+    // Setting these values incorrectly may destroy your ADC!
+    //                                                              ADS1015  ADS1115
+    //                                                              -------  -------
+    // ads.gain = GAIN_TWOTHIRDS;  // 2/3x gain +/- 6.144V  1 bit = 3mV      0.1875mV (default)
+    // ads.gain = GAIN_ONE;        // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+    // ads.gain = GAIN_TWO;        // 2x gain   +/- 2.048V  1 bit = 1mV      0.0625mV
+    // ads.gain = GAIN_FOUR;       // 4x gain   +/- 1.024V  1 bit = 0.5mV    0.03125mV
+    // ads.gain = GAIN_EIGHT;      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
+    // ads.gain = GAIN_SIXTEEN;    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
+
     results = ads1x15_readADC_differential(ads, ADS1015_REG_CONFIG_MUX_DIFF_0_1);
     printf("Differential: %d (%d mV)", results, results * multiplier);
 

@@ -1,35 +1,35 @@
 Adafruit_ADS1015
-================
+===
 
-Driver for TI's ADS1015: 12-bit Differential or Single-Ended ADC with PGA and Comparator
-<!-- START COMPATIBILITY TABLE -->
+C library for TI's ADS1015: 12-bit Differential or Single-Ended ADC with PGA and Comparator.
 
-## Compatibility
+This was originally a C++ library for Arduino, but I converted it to C and ported it to Linux.
 
-MCU                | Tested Works | Doesn't Work | Not Tested  | Notes
------------------- | :----------: | :----------: | :---------: | -----
-Atmega328 @ 16MHz  |      X       |             |            | 
-Atmega328 @ 12MHz  |      X       |             |            | 
-Atmega32u4 @ 16MHz |      X       |             |            | Use SDA/SCL on pins D2 &amp; D3
-Atmega32u4 @ 8MHz  |      X       |             |            | Use SDA/SCL on pins D2 &amp; D3
-ESP8266            |      X       |             |            | SDA/SCL default to pins 4 &amp; 5 but any two pins can be assigned as SDA/SCL using Wire.begin(SDA,SCL)
-Atmega2560 @ 16MHz |      X       |             |            | Use SDA/SCL on pins 20 &amp; 21
-ATSAM3X8E          |      X       |             |            | Use SDA/SCL on pins 20 &amp; 21
-ATSAM21D           |      X       |             |            | 
-ATtiny85 @ 16MHz   |      X       |             |            | Use 0 for SDA, 2 for SCL
-ATtiny85 @ 8MHz    |      X       |             |            | Use 0 for SDA, 2 for SCL
-Intel Curie @ 32MHz |             |             |     X       | 
-STM32F2            |             |             |     X       | 
+This library only works on Linux. I don't have the time to port it to other platforms, but you can do a pull request.
 
-  * ATmega328 @ 16MHz : Arduino UNO, Adafruit Pro Trinket 5V, Adafruit Metro 328, Adafruit Metro Mini
-  * ATmega328 @ 12MHz : Adafruit Pro Trinket 3V
-  * ATmega32u4 @ 16MHz : Arduino Leonardo, Arduino Micro, Arduino Yun, Teensy 2.0
-  * ATmega32u4 @ 8MHz : Adafruit Flora, Bluefruit Micro
-  * ESP8266 : Adafruit Huzzah
-  * ATmega2560 @ 16MHz : Arduino Mega
-  * ATSAM3X8E : Arduino Due
-  * ATSAM21D : Arduino Zero, M0 Pro
-  * ATtiny85 @ 16MHz : Adafruit Trinket 5V
-  * ATtiny85 @ 8MHz : Adafruit Gemma, Arduino Gemma, Adafruit Trinket 3V
+How to build
+---
+There is a simple Makefile. No configure script, or autotools, or cmake, or any other tool, is required. To build the library and the examples, just clone the repo, cd to the folder, and run make.
 
-<!-- END COMPATIBILITY TABLE -->
+There is other targets:
+ * make all: build the library and the examples. This is the default.
+ * make libs: build the library.
+ * make examples: build the library and the examples, then delete the library.
+ * make clean: clean the library, object files and examples.
+ * make clean_after: build the library and the examples, then delete intermediate object files.
+ * make clean_all_after: build the library and the examples, then delete the library and intermediate object files.
+ * make mrproper: delete the build folder.
+
+You can also use parameters:
+ * CC=<compiler name>: change the compiler.
+ * LD=<linker name>: change the linker.
+ * CFLAGS=<compiler flags>: add flags for the compiler.
+ * LDFLAGS=<linker flags>: add flags for the linker.
+ * MODE=release: optimises and strips the binaries. Any warning encountered will result in an error.
+ * BUILDDIR=<build directory>: change the output directory. Default to ./build/
+
+By default, the compiler generates debugging symbols. Using MODE=release will disable them.
+
+Dislaimer
+---
+This library is **not** endorsed by Adafruit. I needed a C library for the ADS1015, so I forked and ported their Arduino library to Linux.
