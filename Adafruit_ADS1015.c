@@ -18,40 +18,34 @@
   v1.0 - First release
 */
 /**************************************************************************/
-#if ARDUINO >= 100
-# include "Arduino.h"
-#else
-# include "WProgram.h"
-#endif
 
-#include <Wire.h>
+#include <linux/i2c-dev.h>
+
+#include <sys/types.h>
+#include <sys/ioctl.h>
+
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "Adafruit_ADS1015.h"
 
 /**************************************************************************/
 /*!
-  @brief  Abstract away platform differences in Arduino wire library
+  @brief  Writes 16-bits to the specified destination register
 */
 /**************************************************************************/
-static uint8_t i2cread(void) {
-#if ARDUINO >= 100
-    return Wire.read();
-#else
-    return Wire.receive();
-#endif
-}
+static int writeRegister(int fd, uint8_t i2cAddress, uint8_t reg, uint16_t value) {
+    uint8_t buf[3];
+    if (ioctl(fd, I2C_SLAVE, i2cAddress) < 0)
+        return -1;
 
-/**************************************************************************/
-/*!
-  @brief  Abstract away platform differences in Arduino wire library
-*/
-/**************************************************************************/
-static void i2cwrite(uint8_t x) {
-#if ARDUINO >= 100
-    Wire.write(x);
-#else
-    Wire.send(x);
-#endif
+    buf[0] = reg;
+    buf[1] = ((uint8_t) (value >> 8));
+    buf[2] = ((uint8_t) (value & 0xFF));
+
+    if (write(fd, buf, 3) != 3)
+        return -1;
+    return 0;
 }
 
 /**************************************************************************/
@@ -59,25 +53,18 @@ static void i2cwrite(uint8_t x) {
   @brief  Writes 16-bits to the specified destination register
 */
 /**************************************************************************/
-static void writeRegister(uint8_t i2cAddress, uint8_t reg, uint16_t value) {
-    Wire.beginTransmission(i2cAddress);
-    i2cwrite((uint8_t) reg);
-    i2cwrite((uint8_t) (value >> 8));
-    i2cwrite((uint8_t) (value & 0xFF));
-    Wire.endTransmission();
-}
+static uint16_t readRegister(int fd, uint8_t i2cAddress, uint8_t reg) {
+    char buf[2];
+    if (ioctl(fd, I2C_SLAVE, i2cAddress) < 0)
+        return 0;
 
-/**************************************************************************/
-/*!
-  @brief  Writes 16-bits to the specified destination register
-*/
-/**************************************************************************/
-static uint16_t readRegister(uint8_t i2cAddress, uint8_t reg) {
-    Wire.beginTransmission(i2cAddress);
-    i2cwrite(ADS1015_REG_POINTER_CONVERT);
-    Wire.endTransmission();
-    Wire.requestFrom(i2cAddress, (uint8_t) 2);
-    return ((i2cread() << 8) | i2cread());
+    if (write(fd, ADS1015_REG_POINTER_CONVERT, 1) != 1)
+        return 0;
+
+    if (read(fd, buf, 2) != 2)
+        return 0;
+
+    return ((buf[0] << 8) | buf[1]);
 }
 
 /**************************************************************************/
@@ -85,7 +72,8 @@ static uint16_t readRegister(uint8_t i2cAddress, uint8_t reg) {
   @brief  Instantiates a new ADS1015 class w/appropriate properties
 */
 /**************************************************************************/
-void ads1015_init(struct ads1x15 *ads1015, uint8_t i2cAddress) {
+void ads1015_init(struct ads1x15 *ads1015, int fd, uint8_t i2cAddress) {
+    ads1015->fd = fd;
     ads1015->i2cAddress = i2cAddress;
     ads1015->conversionDelay = ADS1015_CONVERSIONDELAY;
     ads1015->bitShift = 4;
@@ -97,20 +85,11 @@ void ads1015_init(struct ads1x15 *ads1015, uint8_t i2cAddress) {
   @brief  Instantiates a new ADS1115 class w/appropriate properties
 */
 /**************************************************************************/
-void ads1115_init(struct ads1x15 *ads1115, uint8_t i2cAddress) {
-    ads1015_init(ads1115, i2cAddress);
+void ads1115_init(struct ads1x15 *ads1115, int fd, uint8_t i2cAddress) {
+    ads1015_init(ads1115, fd, i2cAddress);
 
     ads1115->conversionDelay = ADS1115_CONVERSIONDELAY;
     ads1115->bitShift = 0;
-}
-
-/**************************************************************************/
-/*!
-  @brief  Sets up the HW (reads coefficients values, etc.)
-*/
-/**************************************************************************/
-void ads1x15_begin() {
-    Wire.begin();
 }
 
 /**************************************************************************/
@@ -148,14 +127,14 @@ uint16_t ads1x15_readADC_singleEnded(struct ads1x15 ads1x15, uint8_t channel) {
     config |= ADS1015_REG_CONFIG_OS_SINGLE;
 
     // Write config register to the ADC
-    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 
     // Wait for the conversion to complete
-    delay(ads1x15.conversionDelay);
+    usleep(ads1x15.conversionDelay * 1000);
 
     // Read the conversion results
     // Shift 12-bit results right 4 bits for the ADS1015
-    return readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
+    return readRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
 }
 
 /**************************************************************************/
@@ -186,13 +165,13 @@ int16_t ads1x15_readADC_differential(struct ads1x15 ads1x15, uint8_t channels) {
     config |= ADS1015_REG_CONFIG_OS_SINGLE;
 
     // Write config register to the ADC
-    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 
     // Wait for the conversion to complete
-    delay(ads1x15.conversionDelay);
+    usleep(ads1x15.conversionDelay * 1000);
 
     // Read the conversion results
-    res = readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
+    res = readRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
     if (ads1x15.bitShift != 0 && res > 0x07FF)
         res |= 0xF000;
 
@@ -237,10 +216,10 @@ void ads1x15_startComparator_singleEnded(struct ads1x15 ads1x15, uint8_t channel
 
     // Set the high threshold register
     // Shift 12-bit results left 4 bits for the ADS1015
-    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_HITHRESH, threshold << ads1x15.bitShift);
+    writeRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_HITHRESH, threshold << ads1x15.bitShift);
 
     // Write config register to the ADC
-    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 }
 
 /**************************************************************************/
@@ -254,10 +233,10 @@ int16_t ads1x15_getLastConversionResults(struct ads1x15 ads1x15) {
     uint16_t res;
 
     // Wait for the conversion to complete
-    delay(ads1x15.conversionDelay);
+    usleep(ads1x15.conversionDelay * 1000);
 
     // Read the conversion results
-    res = readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
+    res = readRegister(ads1x15.fd, ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
     if (ads1x15.bitShift != 0 && res > 0x07FF)
         res |= 0xF000;
 

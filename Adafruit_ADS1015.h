@@ -21,13 +21,7 @@
 #ifndef __ADAFRUIT_ADS1015_H
 #define __ADAFRUIT_ADS1015_H
 
-# if ARDUINO >= 100
-#  include "Arduino.h"
-# else
-#  include "WProgram.h"
-# endif
-
-# include <Wire.h>
+#include <stdint.h>
 
 /*=========================================================================
   I2C ADDRESS/BITS
@@ -120,16 +114,15 @@ typedef enum {
 } adsGain_t;
 
 struct ads1x15 {
+    int fd;
     uint8_t i2cAddress;
     uint8_t conversionDelay;
     uint8_t bitShift;
     adsGain_t gain;
 };
 
-void ads1015_init(struct ads1x15 *ads1015, uint8_t i2cAddress);
-void ads1115_init(struct ads1x15 *ads1115, uint8_t i2cAddress);
-
-void ads1x15_begin();
+void ads1015_init(struct ads1x15 *ads1015, int fd, uint8_t i2cAddress);
+void ads1115_init(struct ads1x15 *ads1115, int fd, uint8_t i2cAddress);
 
 uint16_t ads1x15_readADC_singleEnded(struct ads1x15 ads1x15, uint8_t channel);
 int16_t ads1x15_readADC_differential(struct ads1x15 ads1x15, uint8_t channels);
