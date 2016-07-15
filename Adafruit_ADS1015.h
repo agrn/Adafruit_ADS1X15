@@ -130,6 +130,7 @@ protected:
   Adafruit_ADS1015(uint8_t i2cAddress = ADS1015_ADDRESS);
   void begin(void);
   uint16_t  readADC_SingleEnded(uint8_t channel);
+  int16_t   readADC_Differential(uint8_t channels);
   int16_t   readADC_Differential_0_1(void);
   int16_t   readADC_Differential_2_3(void);
   void      startComparator_SingleEnded(uint8_t channel, int16_t threshold);
@@ -137,7 +138,6 @@ protected:
   void      setGain(adsGain_t gain);
   adsGain_t getGain(void);
 
- private:
 };
 
 // Derive from ADS1105 & override construction to set properties
@@ -145,6 +145,4 @@ class Adafruit_ADS1115 : public Adafruit_ADS1015
 {
  public:
   Adafruit_ADS1115(uint8_t i2cAddress = ADS1015_ADDRESS);
-
- private:
 };
