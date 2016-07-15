@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
     // ads.gain = GAIN_SIXTEEN;    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
 
     results = ads1x15_readADC_differential(ads, ADS1015_REG_CONFIG_MUX_DIFF_0_1);
-    printf("Differential: %d (%d mV)", results, results * multiplier);
+    printf("Differential: %d (%d mV)\n", results, (int) (results * multiplier));
 
     close(file);
 

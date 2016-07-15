@@ -41,10 +41,10 @@ int main(int argc, char **argv) {
     // ads.gain = GAIN_EIGHT;      // 8x gain   +/- 0.512V  1 bit = 0.25mV   0.015625mV
     // ads.gain = GAIN_SIXTEEN;    // 16x gain  +/- 0.256V  1 bit = 0.125mV  0.0078125mV
 
-    printf("Comparator threshold: 1000 (3.000V)");
+    printf("Comparator threshold: 1000 (3.000V)\n");
 
     ads1x15_startComparator_singleEnded(ads, 0, 1000); // Setup 3V comparator on channel 0
-    printf("AIN0: %d", ads1x15_getLastConversionResults(ads)); // Comparator will only dessert after a read
+    printf("AIN0: %d\n", ads1x15_getLastConversionResults(ads)); // Comparator will only dessert after a read
 
     close(file);
 
