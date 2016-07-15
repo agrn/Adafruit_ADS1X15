@@ -118,7 +118,7 @@ void ads1x15_begin() {
   @brief  Gets a single-ended ADC reading from the specified channel
 */
 /**************************************************************************/
-uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel) {
+uint16_t ads1x15_readADC_singleEnded(struct ads1x15 ads1x15, uint8_t channel) {
     uint16_t config;
     if (channel > 3)
         return 0;
@@ -132,7 +132,7 @@ uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel) {
              ADS1015_REG_CONFIG_MODE_SINGLE;   // Single-shot mode (default)
 
     // Set PGA/voltage range
-    config |= ads1x15->gain;
+    config |= ads1x15.gain;
 
     // Set single-ended input channel
     if (channel == 0)
@@ -148,14 +148,14 @@ uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel) {
     config |= ADS1015_REG_CONFIG_OS_SINGLE;
 
     // Write config register to the ADC
-    writeRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 
     // Wait for the conversion to complete
-    delay(ads1x15->conversionDelay);
+    delay(ads1x15.conversionDelay);
 
     // Read the conversion results
     // Shift 12-bit results right 4 bits for the ADS1015
-    return readRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15->bitShift;  
+    return readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
 }
 
 /**************************************************************************/
@@ -166,7 +166,7 @@ uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel) {
   positive or negative.
 */
 /**************************************************************************/
-int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels) {
+int16_t ads1x15_readADC_differential(struct ads1x15 ads1x15, uint8_t channels) {
     // Start with default values
     uint16_t config = ADS1015_REG_CONFIG_CQUE_NONE    | // Disable the comparator (default val)
                       ADS1015_REG_CONFIG_CLAT_NONLAT  | // Non-latching (default val)
@@ -177,7 +177,7 @@ int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels) 
     uint16_t res;
 
     // Set PGA/voltage range
-    config |= ads1x15->gain;
+    config |= ads1x15.gain;
 
     // Set channels
     config |= channels;
@@ -186,14 +186,14 @@ int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels) 
     config |= ADS1015_REG_CONFIG_OS_SINGLE;
 
     // Write config register to the ADC
-    writeRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 
     // Wait for the conversion to complete
-    delay(ads1x15->conversionDelay);
+    delay(ads1x15.conversionDelay);
 
     // Read the conversion results
-    res = readRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15->bitShift;
-    if (ads1x15->bitShift != 0 && res > 0x07FF)
+    res = readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
+    if (ads1x15.bitShift != 0 && res > 0x07FF)
         res |= 0xF000;
 
     return (int16_t) res;
@@ -208,7 +208,7 @@ int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels) 
   This will also set the ADC in continuous conversion mode.
 */
 /**************************************************************************/
-void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channel, int16_t threshold) {
+void ads1x15_startComparator_singleEnded(struct ads1x15 ads1x15, uint8_t channel, int16_t threshold) {
     uint16_t config;
     if (channel > 3)
         return;
@@ -223,7 +223,7 @@ void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channe
              ADS1015_REG_CONFIG_MODE_CONTIN;   // Continuous conversion mode
 
     // Set PGA/voltage range
-    config |= ads1x15->gain;
+    config |= ads1x15.gain;
 
     // Set single-ended input channel
     if (channel == 0)
@@ -237,10 +237,10 @@ void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channe
 
     // Set the high threshold register
     // Shift 12-bit results left 4 bits for the ADS1015
-    writeRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_HITHRESH, threshold << ads1x15->bitShift);
+    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_HITHRESH, threshold << ads1x15.bitShift);
 
     // Write config register to the ADC
-    writeRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
+    writeRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONFIG, config);
 }
 
 /**************************************************************************/
@@ -250,17 +250,16 @@ void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channe
   results without changing the config value.
 */
 /**************************************************************************/
-int16_t ads1x15_getLastConversionResults(struct ads1x15* ads1x15) {
+int16_t ads1x15_getLastConversionResults(struct ads1x15 ads1x15) {
     uint16_t res;
 
     // Wait for the conversion to complete
-    delay(ads1x15->conversionDelay);
+    delay(ads1x15.conversionDelay);
 
     // Read the conversion results
-    res = readRegister(ads1x15->i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15->bitShift;
-    if (ads1x15->bitShift != 0 && res > 0x07FF)
+    res = readRegister(ads1x15.i2cAddress, ADS1015_REG_POINTER_CONVERT) >> ads1x15.bitShift;
+    if (ads1x15.bitShift != 0 && res > 0x07FF)
         res |= 0xF000;
 
     return (int16_t) res;
 }
-

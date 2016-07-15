@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include <Adafruit_ADS1015.h>
 
-ads1x15 ads;
+struct ads1x15 ads;
 
 void setup(void) 
 {
@@ -11,8 +11,8 @@ void setup(void)
   Serial.println("Getting single-ended readings from AIN0..3");
   Serial.println("ADC Range: +/- 6.144V (1 bit = 3mV/ADS1015, 0.1875mV/ADS1115)");
 
-  // ads1115_init(&ads); // Use this for the ADS1115 (16-bit)
-  ads1015_init(&ads); // Use this for the ADS1015 (12-bit)
+  //ads1115_init(&ads, 0x48); // Use this for the ADS1115 (16-bit)
+  ads1015_init(&ads, 0x48); // Use this for the ADS1015 (12-bit)
 
   // The ADC input range (or gain) can be changed via the following
   // functions, but be careful never to exceed VDD +0.3V max, or to
@@ -34,10 +34,10 @@ void loop(void)
 {
   int16_t adc0, adc1, adc2, adc3;
 
-  adc0 = ads1x15_readADC_singleEnded(&ads, 0);
-  adc1 = ads1x15_readADC_singleEnded(&ads, 1);
-  adc2 = ads1x15_readADC_singleEnded(&ads, 2);
-  adc3 = ads1x15_readADC_singleEnded(&ads, 3);
+  adc0 = ads1x15_readADC_singleEnded(ads, 0);
+  adc1 = ads1x15_readADC_singleEnded(ads, 1);
+  adc2 = ads1x15_readADC_singleEnded(ads, 2);
+  adc3 = ads1x15_readADC_singleEnded(ads, 3);
   Serial.print("AIN0: "); Serial.println(adc0);
   Serial.print("AIN1: "); Serial.println(adc1);
   Serial.print("AIN2: "); Serial.println(adc2);

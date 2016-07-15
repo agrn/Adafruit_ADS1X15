@@ -131,10 +131,10 @@ void ads1115_init(struct ads1x15 *ads1115, uint8_t i2cAddress);
 
 void ads1x15_begin();
 
-uint16_t ads1x15_readADC_singleEnded(struct ads1x15 *ads1x15, uint8_t channel);
-int16_t ads1x15_readADC_differential(struct ads1x15 *ads1x15, uint8_t channels);
-void ads1x15_startComparator_singleEnded(struct ads1x15 *ads1x15, uint8_t channel, int16_t threshold);
+uint16_t ads1x15_readADC_singleEnded(struct ads1x15 ads1x15, uint8_t channel);
+int16_t ads1x15_readADC_differential(struct ads1x15 ads1x15, uint8_t channels);
+void ads1x15_startComparator_singleEnded(struct ads1x15 ads1x15, uint8_t channel, int16_t threshold);
 
-int16_t ads1x15_getLastConversionResults(struct ads1x15 *ads1x15);
+int16_t ads1x15_getLastConversionResults(struct ads1x15 ads1x15);
 
 #endif  /* __ADAFRUIT_ADS1015_H */
